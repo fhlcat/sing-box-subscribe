@@ -1,0 +1,244 @@
+{
+  "log": {
+    "disabled": false,
+    "level": "trace",
+    "output": "sing-box.log",
+    "timestamp": true
+  },
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:20123",
+      "external_ui": "",
+      "external_ui_download_url": "",
+      "secret": "16d5951a04ddd685954404a28986b47b1b9c0d236bc3f2f2a8748fe9b31f9c8f",
+      "default_mode": "rule",
+      "access_control_allow_origin": [
+        "*"
+      ],
+      "access_control_allow_private_network": false
+    },
+    "cache_file": {
+      "enabled": true,
+      "path": "cache.db",
+      "cache_id": "",
+      "store_fakeip": true,
+      "store_rdrc": true,
+      "rdrc_timeout": "7d"
+    }
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed-in",
+      "listen": "127.0.0.1",
+      "listen_port": 48899,
+      "tcp_fast_open": false,
+      "tcp_multi_path": false,
+      "udp_fragment": false
+    },
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "interface_name": "",
+      "address": [
+        "172.18.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "mtu": 9000,
+      "auto_route": true,
+      "strict_route": true,
+      "endpoint_independent_nat": false,
+      "stack": "system",
+      "platform": {
+        "http_proxy": {
+          "enabled": true,
+          "server": "127.0.0.1",
+          "server_port": 48899
+        }
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "Direct"
+    },
+    {
+      "type": "urltest",
+      "tag": "HkAuto",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "3m",
+      "tolerance": 50,
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "{all}"
+      ],
+      "filter": [
+        {
+          "action": "include",
+          "keywords": [
+            "香港"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "urltest",
+      "tag": "JpAuto",
+      "url": "https://www.gstatic.com/generate_204",
+      "interval": "3m",
+      "tolerance": 50,
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "{all}"
+      ],
+      "filter": [
+        {
+          "action": "include",
+          "keywords": [
+            "日本"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "Ai",
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "Direct",
+        "HkAuto",
+        "JpAuto",
+        "{all}"
+      ]
+    },
+    {
+      "type": "selector",
+      "tag": "Select",
+      "interrupt_exist_connections": true,
+      "outbounds": [
+        "Direct",
+        "HkAuto",
+        "JpAuto",
+        "{all}"
+      ]
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "action": "sniff",
+        "inbound": "tun-in"
+      },
+      {
+        "action": "hijack-dns",
+        "protocol": "dns"
+      },
+      {
+        "action": "route",
+        "clash_mode": "direct",
+        "outbound": "Direct"
+      },
+      {
+        "action": "route",
+        "clash_mode": "global",
+        "outbound": "Select"
+      },
+      {
+        "action": "reject",
+        "rule_set": [
+          "Category-Ads"
+        ],
+        "method": ""
+      },
+      {
+        "action": "route",
+        "rule_set": [
+          "Category-Ai-!Cn"
+        ],
+        "outbound": "Ai"
+      },
+      {
+        "action": "route",
+        "rule_set": [
+          "GeoSite-Gfw"
+        ],
+        "outbound": "Select"
+      }
+    ],
+    "rule_set": [
+      {
+        "tag": "Category-Ads",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ads-all.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "Category-Ai-!Cn",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/category-ai-!cn.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      },
+      {
+        "tag": "GeoSite-Gfw",
+        "type": "remote",
+        "url": "https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@sing/geo/geosite/gfw.srs",
+        "format": "binary",
+        "update_interval": "1d"
+      }
+    ],
+    "auto_detect_interface": true,
+    "final": "Direct"
+  },
+  "dns": {
+    "servers": [
+      {
+        "tag": "Local-DNS",
+        "detour": "Direct",
+        "address": "223.5.5.5"
+      },
+      {
+        "tag": "Remote-Dns-Ai",
+        "detour": "Ai",
+        "address": "8.8.8.8"
+      },
+      {
+        "tag": "Remote-DNS",
+        "detour": "Select",
+        "address": "8.8.8.8"
+      }
+    ],
+    "rules": [
+      {
+        "action": "route",
+        "clash_mode": "direct",
+        "server": "Local-DNS"
+      },
+      {
+        "action": "route",
+        "clash_mode": "global",
+        "server": "Remote-DNS"
+      },
+      {
+        "action": "route",
+        "rule_set": [
+          "Category-Ai-!Cn"
+        ],
+        "server": "Remote-Dns-Ai"
+      },
+      {
+        "action": "route",
+        "rule_set": [
+          "GeoSite-Gfw"
+        ],
+        "server": "Remote-DNS"
+      }
+    ],
+    "disable_cache": false,
+    "disable_expire": false,
+    "independent_cache": false,
+    "final": "Local-DNS"
+  }
+}
