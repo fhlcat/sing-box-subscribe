@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 app = Flask(__name__, template_folder='../templates')  # 指定模板文件夹的路径
 app.secret_key = 'sing-box'  # 替换为实际的密钥
 data_json = {}
-os.environ['TEMP_JSON_DATA'] = '{"subscribes":[{"url":"URL","tag":"tag_1","enabled":true,"emoji":1,"subgroup":"","prefix":"","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_2","enabled":false,"emoji":0,"subgroup":"命名/named","prefix":"❤️","User-Agent":"clashmeta"}],"auto_set_outbounds_dns":{"proxy":"","direct":""},"save_config_path":"./config.json","auto_backup":false,"exclude_protocol":"ssr","config_template":"","Only-nodes":false}'
-data_json['TEMP_JSON_DATA'] = '{"subscribes":[{"url":"URL","tag":"tag_1","enabled":true,"emoji":1,"subgroup":"","prefix":"","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_2","enabled":false,"emoji":0,"subgroup":"命名/named","prefix":"❤️","User-Agent":"clashmeta"}],"auto_set_outbounds_dns":{"proxy":"","direct":""},"save_config_path":"./config.json","auto_backup":false,"exclude_protocol":"ssr","config_template":"","Only-nodes":false}'
+os.environ['TEMP_JSON_DATA'] = '{"subscribes":[{"url":"URL","tag":"tag_1","enabled":true,"emoji":1,"subgroup":"","prefix":"","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_2","enabled":false,"emoji":0,"subgroup":"命名/named","prefix":"❤️","User-Agent":"clashmeta"}],"auto_set_outbounds_dns":{"proxy":"","direct":""},"save_config_path":"./config.json","auto_backup":false,"exclude_protocol":"ssr","config-template":"","Only-nodes":false}'
+data_json['TEMP_JSON_DATA'] = '{"subscribes":[{"url":"URL","tag":"tag_1","enabled":true,"emoji":1,"subgroup":"","prefix":"","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_2","enabled":false,"emoji":0,"subgroup":"命名/named","prefix":"❤️","User-Agent":"clashmeta"}],"auto_set_outbounds_dns":{"proxy":"","direct":""},"save_config_path":"./config.json","auto_backup":false,"exclude_protocol":"ssr","config-template":"","Only-nodes":false}'
 
 # 获取系统默认的临时目录路径
 TEMP_DIR = tempfile.gettempdir()
@@ -40,7 +40,7 @@ def get_temp_json_data():
 # 获取config_template目录下的模板文件列表
 def get_template_list():
     template_list = []
-    config_template_dir = 'config_template'  # 配置模板文件夹路径
+    config_template_dir = 'config-template'  # 配置模板文件夹路径
     template_files = os.listdir(config_template_dir)  # 获取文件夹中的所有文件
     template_list = [os.path.splitext(file)[0] for file in template_files if file.endswith('.json')]  # 移除扩展名并过滤出以.json结尾的文件
     template_list.sort()  # 对文件名进行排序
@@ -120,7 +120,7 @@ def config(url):
                         content_type='application/json; charset=utf-8', status=403)
     # temp_json_data_str = os.environ['TEMP_JSON_DATA']
     # temp_json_data = json.loads(temp_json_data_str)
-    temp_json_data = json.loads('{"subscribes":[{"url":"URL","tag":"tag_1","enabled":true,"emoji":1,"subgroup":"","prefix":"","ex-node-name": "","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_2","enabled":false,"emoji":1,"subgroup":"","prefix":"","ex-node-name": "","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_3","enabled":false,"emoji":1,"subgroup":"","prefix":"","ex-node-name": "","User-Agent":"v2rayng"}],"auto_set_outbounds_dns":{"proxy":"","direct":""},"save_config_path":"./config.json","auto_backup":false,"exclude_protocol":"ssr","config_template":"","Only-nodes":false}')
+    temp_json_data = json.loads('{"subscribes":[{"url":"URL","tag":"tag_1","enabled":true,"emoji":1,"subgroup":"","prefix":"","ex-node-name": "","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_2","enabled":false,"emoji":1,"subgroup":"","prefix":"","ex-node-name": "","User-Agent":"v2rayng"},{"url":"URL","tag":"tag_3","enabled":false,"emoji":1,"subgroup":"","prefix":"","ex-node-name": "","User-Agent":"v2rayng"}],"auto_set_outbounds_dns":{"proxy":"","direct":""},"save_config_path":"./config.json","auto_backup":false,"exclude_protocol":"ssr","config-template":"","Only-nodes":false}')
     subscribe = temp_json_data['subscribes'][0]
     subscribe2 = temp_json_data['subscribes'][1]
     subscribe3 = temp_json_data['subscribes'][2]
@@ -246,7 +246,7 @@ def config(url):
         subscribe['ex-node-name'] = enn_param
         subscribe['User-Agent'] = ua_param if ua_param else 'v2rayng'
     temp_json_data['exclude_protocol'] = eps_param if eps_param else temp_json_data.get('exclude_protocol', '')
-    temp_json_data['config_template'] = unquote(file_param) if file_param else temp_json_data.get('config_template', '')
+    temp_json_data['config-template'] = unquote(file_param) if file_param else temp_json_data.get('config-template', '')
     #print (f"Custom Page for {url} with link={full_url}, emoji={emoji_param}, file={file_param}, tag={tag_param}, UA={ua_param}, prefix={pre_param}")
     #page_content = f"生成的页面内容：{full_url}"
     #return page_content
@@ -254,7 +254,7 @@ def config(url):
         selected_template_index = '0'
         selected_gh_proxy_index = ''
         if file_param.isdigit():
-            temp_json_data['config_template'] = ''
+            temp_json_data['config-template'] = ''
             selected_template_index = str(int(file_param) - 1)
         if gh_proxy_param.isdigit():
             selected_gh_proxy_index = str(int(gh_proxy_param) - 1)

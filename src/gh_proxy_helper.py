@@ -1,8 +1,6 @@
 import re
 
 def set_gh_proxy(config, selected_index=0):
-
-
     # 加速服务列表（名称, 前缀）
     proxy_methods = [
         ("gh-proxy.com", "https://gh-proxy.com/"),
