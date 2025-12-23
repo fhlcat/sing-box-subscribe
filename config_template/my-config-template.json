@@ -212,6 +212,10 @@
     ],
     "rules": [
       {
+        "outbound": "any",
+        "server": "Local-DNS"
+      },
+      {
         "action": "route",
         "clash_mode": "direct",
         "server": "Local-DNS"
